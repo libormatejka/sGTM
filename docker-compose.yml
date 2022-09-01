@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  sgtm:
+    container_name: sGTM
+    image: gcr.io/cloud-tagging-10302018/gtm-cloud-image:stable    
+    ports:
+      - 8080:8080
+    environment:
+      - CONTAINER_CONFIG=XXX
+      - RUN_AS_PREVIEW_SERVER=false
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/service_account_key.json
+    volumes:
+      - ./local_service_account_key.json:/app/service_account_key.json
+  nginx:
+    container_name: Nginx
+    image: nginx:1.19.4-alpine
+    volumes:
+    - ./www:/srv/www:delegated
+    - ./nginx/default.conf:/etc/nginx/templates/default.conf.template:delegated
+    environment:
+    - NGINX_PHP_HOST=php
+    ports:
+    - 80:80
+  php:
+    container_name: PHP
+    build:
+      context: ./
+      dockerfile: ./php/Dockerfile
+    working_dir: /srv
+    volumes:
+      - ./:/srv:delegated
